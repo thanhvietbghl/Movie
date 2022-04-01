@@ -19,8 +19,8 @@ class MovieDetailViewController: UIViewController, BindableType {
     @IBOutlet private weak var likeView: UIView!
     @IBOutlet private weak var likeImageView: UIImageView!
     
-    var viewModelType: MovieDetailViewModelType!
-    var coodinatorType: MovieDetailCoodinatorType!
+    var viewModel: MovieDetailViewModelType!
+    var coodinator: MovieDetailCoodinatorType!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,12 +30,12 @@ class MovieDetailViewController: UIViewController, BindableType {
     }
     
     private func setupUI() {
-        backdropImageView.setImage(url: viewModelType.movie.getBackdropURL(), placeHolder: AppConfig.defaultImage)
-        posterImageView.setImage(url: viewModelType.movie.getPosterURL(), placeHolder: AppConfig.defaultImage)
-        titleLabel.text = viewModelType.movie.title
-        overviewView.isHidden = viewModelType.contentType != .aboutMovie
-        reviewsView.isHidden = viewModelType.contentType != .reviews
-        likeImageView.image = UIImage(named: "icon_watch_list")?.withRenderingMode(.alwaysTemplate)
+        backdropImageView.setImage(url: viewModel.movie.getBackdropURL(), placeHolder: AppConfig.defaultImage)
+        posterImageView.setImage(url: viewModel.movie.getPosterURL(), placeHolder: AppConfig.defaultImage)
+        titleLabel.text = viewModel.movie.title
+        overviewView.isHidden = viewModel.movieDetailContentType != .aboutMovie
+        reviewsView.isHidden = viewModel.movieDetailContentType != .reviews
+        likeImageView.image = AppImages.getImage(imageName: .iconWatchList)?.withRenderingMode(.alwaysTemplate)
         updateLikeView()
     }
     
@@ -51,41 +51,39 @@ class MovieDetailViewController: UIViewController, BindableType {
     }
     
     private func setupData() {
-        viewModelType.getMovieReviews { [weak self] in
+        viewModel.getMovieReviews { [weak self] in
             guard let self = self else { return }
             self.contentCollectionView.reloadData()
         }
     }
-    // rename param
-    private func updateUIWithContentView(contentType: MovieDetailContentType) {
-        guard contentType != viewModelType.contentType else { return }
-        viewModelType.contentType = contentType
-        overviewView.isHidden = contentType != .aboutMovie
-        reviewsView.isHidden = contentType != .reviews
-        contentCollectionView.scrollToItem(at: IndexPath(row: contentType.rawValue, section: 0),
-                                           at: .centeredHorizontally,
-                                           animated: true)
+    
+    private func updateUIWithContentView(movieDetailContentType: MovieDetailContentType) {
+        guard movieDetailContentType != viewModel.movieDetailContentType else { return }
+        viewModel.movieDetailContentType = movieDetailContentType
+        overviewView.isHidden = movieDetailContentType != .aboutMovie
+        reviewsView.isHidden = movieDetailContentType != .reviews
+        contentCollectionView.scrollToItem(at: IndexPath(row: movieDetailContentType.rawValue, section: 0), at: .centeredHorizontally, animated: true)
     }
     
     private func updateLikeView() {
-        likeView.backgroundColor = viewModelType.movie.isLike ? AppColors.greenColor : AppColors.lightGrayColor
-        likeImageView.tintColor = viewModelType.movie.isLike ? AppColors.grayColor : AppColors.whiteColor
+        likeView.backgroundColor = viewModel.movie.isLike ? AppColors.greenColor : AppColors.lightGrayColor
+        likeImageView.tintColor = viewModel.movie.isLike ? AppColors.grayColor : AppColors.whiteColor
     }
     
     @IBAction private func didTapBack(_ sender: Any) {
-        coodinatorType.finish()
+        coodinator.finish()
     }
     
     @IBAction private func didTapAboutMovie(_ sender: Any) {
-        updateUIWithContentView(contentType: .aboutMovie)
+        updateUIWithContentView(movieDetailContentType: .aboutMovie)
     }
     
     @IBAction private func didTapReviews(_ sender: Any) {
-        updateUIWithContentView(contentType: .reviews)
+        updateUIWithContentView(movieDetailContentType: .reviews)
     }
     
     @IBAction private func didTapLike(_ sender: Any) {
-        viewModelType.didTapLike(self) { [weak self] in
+        viewModel.didTapLike(self) { [weak self] in
             guard let self = self else { return }
             self.updateLikeView()
         }
@@ -95,7 +93,7 @@ class MovieDetailViewController: UIViewController, BindableType {
 extension MovieDetailViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return collectionView == categoryCollectionView ? viewModelType.categories.count : 2
+        return collectionView == categoryCollectionView ? viewModel.categories.count : 2
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
@@ -116,7 +114,7 @@ extension MovieDetailViewController: UICollectionViewDataSource, UICollectionVie
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         if collectionView == categoryCollectionView {
-            let width = viewModelType.getWidthOfCategoryItem(indexPath: indexPath)
+            let width = viewModel.getWidthOfCategoryItem(indexPath: indexPath)
             return CGSize(width: width, height: collectionView.frame.height)
         } else {
             return CGSize(width: collectionView.frame.width, height: collectionView.frame.height)
@@ -129,47 +127,46 @@ extension MovieDetailViewController: UICollectionViewDataSource, UICollectionVie
         visibleRect.size = contentCollectionView.bounds.size
         let visiblePoint = CGPoint(x: visibleRect.midX, y: visibleRect.midY)
         guard let indexPath = contentCollectionView.indexPathForItem(at: visiblePoint) else { return }
-        updateUIWithContentView(contentType: MovieDetailContentType(rawValue: indexPath.row) ?? .aboutMovie)
+        updateUIWithContentView(movieDetailContentType: MovieDetailContentType(rawValue: indexPath.row) ?? .aboutMovie)
     }
-         
+    
     private func createCategoryCollectionViewCell(collectionView: UICollectionView, indexPath: IndexPath) -> UICollectionViewCell {
+        guard indexPath.row < viewModel.categories.count else { return UICollectionViewCell() }
         let cellViewModel = CategoryCollectionViewCellViewModel(
-            isSelectedCategory: viewModelType.isCategorySeleted(categoryID: viewModelType.categories[indexPath.row].id),
-            category: viewModelType.categories[indexPath.row],
+            isSelectedCategory: viewModel.isCategorySeleted(categoryID: viewModel.categories[indexPath.row].id),
+            category: viewModel.categories[indexPath.row],
             diTapcategory: { [weak self] in
                 guard let self = self else { return }
                 self.hanldeDidTapcategory(index: indexPath.row)
             })
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CategoryCollectionViewCell.identifier, for: indexPath) as? CategoryCollectionViewCell
-        cell?.setup(viewModelType: cellViewModel,
-                    categoryButtonFont: viewModelType.categoryNameFont,
-                    categoryButtonHighlightFont: viewModelType.categoryNameHighlightFont)
+        cell?.setup(viewModelType: cellViewModel, categoryButtonFont: viewModel.categoryNameFont, categoryButtonHighlightFont: viewModel.categoryNameHighlightFont)
         return cell ?? UICollectionViewCell()
     }
     
     private func createAboutMovieCollectionViewCell(collectionView: UICollectionView, indexPath: IndexPath) -> UICollectionViewCell {
-        let cellViewModel = AboutMovieCollectionViewCellViewModel(movie: viewModelType.movie)
+        let cellViewModel = AboutMovieCollectionViewCellViewModel(movie: viewModel.movie)
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: AboutMovieCollectionViewCell.identifier, for: indexPath) as? AboutMovieCollectionViewCell
         cell?.setup(viewModel: cellViewModel)
         return cell ?? UICollectionViewCell()
     }
     
     private func createReviewsCollectionViewCell(collectionView: UICollectionView, indexPath: IndexPath) -> UICollectionViewCell {
-        let cellViewModel = ReviewsCollectionViewCellViewModel(reviews: viewModelType.reviews)
+        let cellViewModel = ReviewsCollectionViewCellViewModel(reviews: viewModel.reviews)
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ReviewsCollectionViewCell.identifier, for: indexPath) as? ReviewsCollectionViewCell
         cell?.setup(viewModel: cellViewModel)
         return cell ?? UICollectionViewCell()
     }
     
     private func hanldeDidTapcategory(index: Int) {
-        let oldCatelorySelectedID = viewModelType.categorySelected?.id
-        let newCatelorySelected = viewModelType.categories[index]
-        viewModelType.categorySelected = newCatelorySelected
-        if let indexOldCatelorySelectedID = viewModelType.categories
+        let oldCatelorySelectedID = viewModel.categorySelected?.id
+        let newCatelorySelected = viewModel.categories[index]
+        viewModel.categorySelected = newCatelorySelected
+        if let indexOldCatelorySelectedID = viewModel.categories
             .firstIndex(where: { $0.id == oldCatelorySelectedID }) {
             categoryCollectionView.reloadItems(at: [IndexPath(row: indexOldCatelorySelectedID, section: 0)])
         }
-        guard let indexNewCatelorySelected = viewModelType.categories
+        guard let indexNewCatelorySelected = viewModel.categories
             .firstIndex(where: { $0.id == newCatelorySelected.id }) else { return }
         categoryCollectionView.reloadItems(at: [IndexPath(row: indexNewCatelorySelected, section: 0)])
     }

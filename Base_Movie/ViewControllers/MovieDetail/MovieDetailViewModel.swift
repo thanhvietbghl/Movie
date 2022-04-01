@@ -24,7 +24,7 @@ protocol MovieDetailViewModelType {
     var movie: Movie { get }
     var categories: [Category] { get }
     var reviews: [Review] { get }
-    var contentType: MovieDetailContentType { get set }
+    var movieDetailContentType: MovieDetailContentType { get set }
     var categorySelected: Category? { get set }
     
     func isCategorySeleted(categoryID: Int) -> Bool
@@ -43,7 +43,7 @@ final class MovieDetailViewModel: MovieDetailViewModelType {
     var reviews = [Review]()
     var categories = [Category]()
     var categorySelected: Category?
-    var contentType: MovieDetailContentType = .aboutMovie
+    var movieDetailContentType: MovieDetailContentType = .aboutMovie
 
     private let disposeBag = DisposeBag()
     private let repository: MovieRepositories = MovieRepositoriesDefault()
@@ -63,8 +63,7 @@ final class MovieDetailViewModel: MovieDetailViewModelType {
         let isCategorySelected = self.categorySelected?.id == categories[indexPath.row].id
         let fontAttributes = [NSAttributedString.Key.font: isCategorySelected ? categoryNameHighlightFont : categoryNameFont]
         let widthOfName: CGFloat = (categories[indexPath.row].name as NSString).size(withAttributes: fontAttributes as [NSAttributedString.Key : Any]).width
-        let widthOfSpaceLeftRightName = CGFloat(44)
-        return widthOfName + widthOfSpaceLeftRightName
+        return widthOfName + AppConfig.widthBetweenLeftRightAndTitleButton
     }
     
     func getMovieReviews(completed: @escaping () -> ()) {

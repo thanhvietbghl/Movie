@@ -19,7 +19,7 @@ class MovieTableViewCell: UITableViewCell {
     
     private var viewModel: MovieTableViewCellViewModelType?
     
-    func setUp(viewModel: MovieTableViewCellViewModelType) {
+    func setup(viewModel: MovieTableViewCellViewModelType) {
         self.viewModel = viewModel
         setupUI()
     }
@@ -34,10 +34,8 @@ class MovieTableViewCell: UITableViewCell {
     }
     
     private func handleChangeLikeMovie() {
-        let likeImage = (viewModel?.movie.isLike ?? false) ? "icon_like_selected" : "icon_like"
-        let starImage = (viewModel?.movie.isLike ?? false) ? "icon_star_selected" : "icon_star"
-        likeButton.setImage(UIImage(named: likeImage), for: .normal)
-        starButton.setImage(UIImage(named: starImage), for: .normal)
+        likeButton.setImage(AppImages.getImage(imageName: (viewModel?.movie.isLike ?? false) ? .iconLikeSelected : .iconLike), for: .normal)
+        starButton.setImage(AppImages.getImage(imageName: (viewModel?.movie.isLike ?? false) ? .iconStarSelected : .iconStar), for: .normal)
         rateLabe.textColor = (viewModel?.movie.isLike ?? false) ? AppColors.greenColor : AppColors.whiteColor
     }
     

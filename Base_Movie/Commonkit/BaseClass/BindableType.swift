@@ -12,15 +12,15 @@ protocol BindableType: AnyObject {
     associatedtype ViewModelType
     associatedtype CoodinatorType
     
-    var viewModelType: ViewModelType! { get set }
-    var coodinatorType: CoodinatorType! { get set }
+    var viewModel: ViewModelType! { get set }
+    var coodinator: CoodinatorType! { get set }
 }
 
 extension BindableType where Self: UIViewController {
     
-    func bind(to viewModelType: Self.ViewModelType, to coodinatorType: Self.CoodinatorType) {
-        self.viewModelType = viewModelType
-        self.coodinatorType = coodinatorType
+    func bind(to viewModel: Self.ViewModelType, to coodinator: Self.CoodinatorType) {
+        self.viewModel = viewModel
+        self.coodinator = coodinator
         loadViewIfNeeded()
     }
 }

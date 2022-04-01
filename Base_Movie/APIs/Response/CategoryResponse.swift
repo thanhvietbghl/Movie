@@ -1,5 +1,5 @@
 //
-//  CategoriesResponse.swift
+//  CategoryResponse.swift
 //  Base_Movie
 //
 //  Created by Viet Phan on 25/03/2022.
@@ -7,11 +7,11 @@
 
 import Foundation
 
-struct CategoriesResponse: Codable {
+struct CategoryResponse: Codable {
     
-    var category: [Category]
+    var categories: [Category]
     
     enum CodingKeys: String, CodingKey {
-        case category = "genres"
+        case categories = "genres"
     }
 }

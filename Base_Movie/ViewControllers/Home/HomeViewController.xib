@@ -23,9 +23,9 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="HomeViewController" customModule="Base_Movie" customModuleProvider="target">
             <connections>
-                <outlet property="movieTableView" destination="IBi-to-tP7" id="4hw-ua-Tac"/>
-                <outlet property="movieTypeCollectionView" destination="U0b-9H-Tct" id="Rqf-hL-LaK"/>
+                <outlet property="categoriesCollectionView" destination="U0b-9H-Tct" id="Rqf-hL-LaK"/>
                 <outlet property="moviesNoDataView" destination="LQi-j5-s6e" id="bQk-Gc-qib"/>
+                <outlet property="moviesTableView" destination="IBi-to-tP7" id="4hw-ua-Tac"/>
                 <outlet property="searhTextField" destination="MKx-bY-Laj" id="n3z-rq-sQM"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
             </connections>

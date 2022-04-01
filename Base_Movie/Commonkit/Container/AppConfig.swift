@@ -13,4 +13,5 @@ struct AppConfig {
     static let imagePathString = "https://image.tmdb.org/t/p/w500/"
     static let defaultImage = UIImage(named: "icon_movie")
     static let defaultAvatar = UIImage(named: "icon_avatar")
+    static let widthBetweenLeftRightAndTitleButton = CGFloat(44)
 }

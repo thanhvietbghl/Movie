@@ -9,14 +9,14 @@ import Foundation
 import RxSwift
 
 protocol CategoryRepositories {
-    func getCategories() -> Observable<CategoriesResponse>
+    func getCategories() -> Observable<CategoryResponse>
 }
 
 class CategoryRepositoriesDefault: CategoryRepositories {
     
     private let apiProvider = APIProvider<CategoryAPIs>()
     
-    func getCategories() -> Observable<CategoriesResponse> {
+    func getCategories() -> Observable<CategoryResponse> {
         return apiProvider.request(.getCategories)
     }
 }

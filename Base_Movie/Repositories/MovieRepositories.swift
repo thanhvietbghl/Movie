@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 
 protocol MovieRepositories {
-    func getListMovie(_ page: Int) -> Observable<MovieResponse>
+    func getMovies(_ page: Int) -> Observable<MovieResponse>
     func getReviews(_ movieID: String) -> Observable<ReviewsResponse>
 }
 
@@ -17,7 +17,7 @@ class MovieRepositoriesDefault: MovieRepositories {
     
     private let apiProvider = APIProvider<MovieAPIs>()
     
-    func getListMovie(_ page: Int) -> Observable<MovieResponse> {
+    func getMovies(_ page: Int) -> Observable<MovieResponse> {
         return apiProvider.request(.getMovies(page))
     }
     

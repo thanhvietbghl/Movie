@@ -39,7 +39,8 @@ extension ReviewsCollectionViewCell: UITableViewDataSource, UITableViewDelegate 
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let viewModel = self.viewModel else { return UITableViewCell() }
+        guard let viewModel = self.viewModel,
+              indexPath.row < viewModel.reviews.count else { return UITableViewCell() }
         let cellViewModel = ReviewsTableViewCellViewModel(review: viewModel.reviews[indexPath.row])
         let cell = tableView.dequeueReusableCell(withIdentifier: ReviewsTableViewCell.identifier, for: indexPath) as? ReviewsTableViewCell
         cell?.setup(viewModel: cellViewModel)

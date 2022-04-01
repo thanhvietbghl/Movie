@@ -10,12 +10,12 @@ import UIKit
 class HomeViewController: UIViewController, BindableType {
     
     @IBOutlet private weak var searhTextField: UITextField!
-    @IBOutlet private weak var movieTypeCollectionView: UICollectionView!
-    @IBOutlet private weak var movieTableView: BaseLoadMoreTableView!
+    @IBOutlet private weak var categoriesCollectionView: UICollectionView!
+    @IBOutlet private weak var moviesTableView: BaseLoadMoreTableView!
     @IBOutlet private weak var moviesNoDataView: UIView!
     
-    var viewModelType: HomeViewModelType!
-    var coodinatorType: HomeCoodinatorType!
+    var viewModel: HomeViewModelType!
+    var coodinator: HomeCoodinatorType!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,16 +30,16 @@ class HomeViewController: UIViewController, BindableType {
     }
     
     private func setupCollectionView() {
-        movieTypeCollectionView.registerCell(ofType: CategoryCollectionViewCell.self)
-        movieTypeCollectionView.dataSource = self
-        movieTypeCollectionView.delegate = self
+        categoriesCollectionView.registerCell(ofType: CategoryCollectionViewCell.self)
+        categoriesCollectionView.dataSource = self
+        categoriesCollectionView.delegate = self
     }
     
     private func setupTableView() {
-        movieTableView.registerCell(ofType: MovieTableViewCell.self)
-        movieTableView.dataSource = self
-        movieTableView.delegate = self
-        movieTableView.loadMoreDelegate = self
+        moviesTableView.registerCell(ofType: MovieTableViewCell.self)
+        moviesTableView.dataSource = self
+        moviesTableView.delegate = self
+        moviesTableView.loadMoreDelegate = self
     }
     
     private func setupUI() {
@@ -48,46 +48,52 @@ class HomeViewController: UIViewController, BindableType {
         searhTextField.attributedPlaceholder = NSAttributedString(
             string: "Search Here ...",
             attributes: [.foregroundColor: UIColor.white,
-                         .font: UIFont.init(name: "Poppins", size: 15) ?? UIFont.systemFont(ofSize: 14)
+                         .font: AppFont.getFont(fontName: .regular, fontSize: 14)
             ]
         )
     }
     
     private func setupData() {
-        viewModelType.getCategories { [weak self] in
+        viewModel.getCategories { [weak self] in
             guard let self = self else { return }
-            self.movieTypeCollectionView.reloadData()
-            self.movieTableView.reloadData()
-            self.moviesNoDataView.isHidden = !self.viewModelType.movies.isEmpty
+            self.categoriesCollectionView.reloadData()
+            self.moviesTableView.reloadData()
+            self.moviesNoDataView.isHidden = !self.viewModel.movies.isEmpty
         }
     }
     
     private func handleSearch() {
         guard let input = searhTextField.text else { return }
         if !input.isEmpty {
-            viewModelType.searchMovie(input: input,
-                                      isWithCategory: false,
-                                      isLoadMore: false,
-                                      isResetLoadMore: true) { [weak self] in
+            viewModel.searchMovie(input: input,
+                                  isSearchWithCategory: false,
+                                  isLoadMore: false,
+                                  isResetLoadMore: true) { [weak self] in
                 guard let self = self else { return }
-                self.movieTableView.reloadData()
-                self.movieTableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
-                self.moviesNoDataView.isHidden = !self.viewModelType.movies.isEmpty
+                self.moviesTableView.reloadData()
+                if !self.viewModel.movies.isEmpty {
+                    self.moviesTableView.scrollToRow(at: IndexPath(row: 0, section: 0),
+                                                    at: .top,
+                                                    animated: true)
+                }
+                self.moviesNoDataView.isHidden = !self.viewModel.movies.isEmpty
             }
         } else {
-            guard let categoryName = viewModelType.categorySelected?.name else { return }
-            viewModelType.searchMovie(input: categoryName,
-                                      isWithCategory: true,
-                                      isLoadMore: false,
-                                      isResetLoadMore: true) { [weak self] in
+            guard let categoryName = viewModel.categorySelected?.name else { return }
+            viewModel.searchMovie(input: categoryName,
+                                  isSearchWithCategory: true,
+                                  isLoadMore: false,
+                                  isResetLoadMore: true) { [weak self] in
                 guard let self = self else { return }
-                self.movieTableView.reloadData()
-                self.movieTableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
+                self.moviesTableView.reloadData()
+                self.moviesTableView.scrollToRow(at: IndexPath(row: 0, section: 0),
+                                                at: .top,
+                                                animated: true)
             }
         }
-        if let index = viewModelType.categories
-            .firstIndex(where: { $0.id == viewModelType.categorySelected?.id }) {
-            movieTypeCollectionView.reloadItems(at: [IndexPath(row: index, section: 0)])
+        if let index = viewModel.categories
+            .firstIndex(where: { $0.id == viewModel.categorySelected?.id }) {
+            categoriesCollectionView.reloadItems(at: [IndexPath(row: index, section: 0)])
         }
     }
     
@@ -106,68 +112,79 @@ extension HomeViewController: UITextFieldDelegate {
         handleSearch()
         return true
     }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        print("shaaa")
+    }
 }
 
 extension HomeViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModelType.movies.count
+        return viewModel.movies.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-       return createMovieTableViewCell(tableView: tableView, indexPath: indexPath)
+       return createMovieTableViewCell(tableView: tableView,
+                                       indexPath: indexPath)
     }
     
     private func createMovieTableViewCell(tableView: UITableView, indexPath: IndexPath) -> UITableViewCell {
-        let cellViewModel = MovieTableViewCellViewModel(movie: viewModelType.movies[indexPath.row],
+        guard indexPath.row < viewModel.movies.count else { return UITableViewCell() }
+        let cellViewModel = MovieTableViewCellViewModel(movie: viewModel.movies[indexPath.row],
                                                         didTapLike: { [weak self] (isLike, voteCount) in
             guard let self = self else { return }
-            self.viewModelType.didTapLike(index: indexPath.row, islike: isLike, voteCount: voteCount)
+            self.viewModel.didTapLike(index: indexPath.row,
+                                      islike: isLike,
+                                      voteCount: voteCount)
         })
-        let cell = tableView.dequeueReusableCell(withIdentifier: MovieTableViewCell.identifier, for: indexPath) as? MovieTableViewCell
-        cell?.setUp(viewModel: cellViewModel)
+        let cell = tableView.dequeueReusableCell(withIdentifier: MovieTableViewCell.identifier,
+                                                 for: indexPath) as? MovieTableViewCell
+        cell?.setup(viewModel: cellViewModel)
         return cell ?? UITableViewCell()
     }
 }
 
 extension HomeViewController: UITableViewDelegate {
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        coodinatorType.showMovieDetail(movie: viewModelType.movies[indexPath.row],
-                                       categorys: viewModelType.categories,
-                                       delegate: self)
+    func tableView(_ tableView: UITableView,
+                   didSelectRowAt indexPath: IndexPath) {
+        guard indexPath.row < viewModel.movies.count else { return }
+        coodinator.showMovieDetail(movie: viewModel.movies[indexPath.row],
+                                   categorys: viewModel.categories,
+                                   delegate: self)
     }
 }
 
 extension HomeViewController: UIScrollViewDelegate, LoadMoreDelegate {
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        guard scrollView == movieTableView else { return }
-        self.movieTableView.scrollViewDidScroll(scrollView)
+        guard scrollView == moviesTableView else { return }
+        self.moviesTableView.scrollViewDidScroll(scrollView)
     }
     
     func isShowLoadMore() -> Bool {
-        return viewModelType.isCanLoadMoreMovie
+        return viewModel.isCanLoadMoreMovie
     }
     
     func showingLoadMore(handleDidLoadMoreSuccess: @escaping () -> Void) {
-        if viewModelType.isSearching {
+        if viewModel.isSearching {
             guard let input = searhTextField.text else { return }
-            viewModelType.searchMovie(input: input,
-                                      isWithCategory: false,
-                                      isLoadMore: true,
-                                      isResetLoadMore: false,
-                                      completion: { [weak self] in
+            viewModel.searchMovie(input: input,
+                                  isSearchWithCategory: false,
+                                  isLoadMore: true,
+                                  isResetLoadMore: false,
+                                  completion: { [weak self] in
                 guard let self = self else { return }
-                self.movieTableView.reloadData()
+                self.moviesTableView.reloadData()
                 handleDidLoadMoreSuccess()
             })
         } else {
-            viewModelType.getListMovie(isLoadMore: true,
-                                   isResetLoadMore: false,
-                                   completion: { [weak self] in
+            viewModel.getMovies(isLoadMore: true,
+                                isResetLoadMore: false,
+                                completion: { [weak self] in
                 guard let self = self else { return }
-                self.movieTableView.reloadData()
+                self.moviesTableView.reloadData()
                 handleDidLoadMoreSuccess()
             })
         }
@@ -176,61 +193,82 @@ extension HomeViewController: UIScrollViewDelegate, LoadMoreDelegate {
 
 extension HomeViewController: UICollectionViewDataSource {
     
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return viewModelType.categories.count
+    func collectionView(_ collectionView: UICollectionView,
+                        numberOfItemsInSection section: Int) -> Int {
+        return viewModel.categories.count
     }
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        return createCategoryCollectionViewCell(collectionView: collectionView, indexPath: indexPath)
+    func collectionView(_ collectionView: UICollectionView,
+                        cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        return createCategoryCollectionViewCell(collectionView: collectionView,
+                                                indexPath: indexPath)
     }
     
-    private func createCategoryCollectionViewCell(collectionView: UICollectionView, indexPath: IndexPath) -> UICollectionViewCell {
-        let isSelectedCategory = viewModelType.categories[indexPath.row].id == viewModelType.categorySelected?.id && !viewModelType.isSearching
+    private func createCategoryCollectionViewCell(collectionView: UICollectionView,
+                                                  indexPath: IndexPath) -> UICollectionViewCell {
+        guard indexPath.row < viewModel.categories.count else { return UICollectionViewCell() }
+        let isSelectedCategory = viewModel.categories[indexPath.row].id == viewModel.categorySelected?.id && !viewModel.isSearching
         let cellViewModel = CategoryCollectionViewCellViewModel(
             isSelectedCategory: isSelectedCategory,
-            category: viewModelType.categories[indexPath.row],
+            category: viewModel.categories[indexPath.row],
             diTapcategory: { [weak self] in
                 guard let self = self else { return }
                 self.hanldeDidTapcategory(index: indexPath.row)
             })
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CategoryCollectionViewCell.identifier, for: indexPath) as? CategoryCollectionViewCell
-        cell?.setup(viewModelType: cellViewModel, categoryButtonFont: viewModelType.categoryNameFont, categoryButtonHighlightFont: viewModelType.categoryNameHighlightFont)
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CategoryCollectionViewCell.identifier,
+                                                      for: indexPath) as? CategoryCollectionViewCell
+        cell?.setup(viewModelType: cellViewModel,
+                    categoryButtonFont: viewModel.categoryNameFont,
+                    categoryButtonHighlightFont: viewModel.categoryNameHighlightFont)
         return cell ?? UICollectionViewCell()
     }
                                                         
     private func hanldeDidTapcategory(index: Int) {
-        guard index < viewModelType.categories.count else { return }
+        guard index < viewModel.categories.count else { return }
         self.searhTextField.text = nil
-        let oldCatelorySelectedID = viewModelType.categorySelected?.id
-        let newCatelorySelected = viewModelType.categories[index]
-        viewModelType.didTapcategory(categorySelected: newCatelorySelected) { [weak self] in
+        let oldCatelorySelectedID = viewModel.categorySelected?.id
+        let newCatelorySelected = viewModel.categories[index]
+        viewModel.didTapcategory(categorySelected: newCatelorySelected) { [weak self] in
             guard let self = self else { return }
-            if let indexOldCatelorySelectedID = self.viewModelType.categories
+            if let indexOldCatelorySelectedID = self.viewModel.categories
                 .firstIndex(where: { $0.id == oldCatelorySelectedID }) {
-                self.movieTypeCollectionView.reloadItems(at: [IndexPath(row: indexOldCatelorySelectedID, section: 0)])
+                self.categoriesCollectionView.reloadItems(at: [IndexPath(row: indexOldCatelorySelectedID, section: 0)])
             }
-            guard let indexNewCatelorySelected = self.viewModelType.categories
+            guard let indexNewCatelorySelected = self.viewModel.categories
                 .firstIndex(where: { $0.id == newCatelorySelected.id }) else { return }
-            self.movieTypeCollectionView.reloadItems(at: [IndexPath(row: indexNewCatelorySelected, section: 0)])
-            self.movieTableView.reloadData()
-            self.movieTableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
+            self.categoriesCollectionView.reloadItems(at: [IndexPath(row: indexNewCatelorySelected,
+                                                                    section: 0)]
+            )
+            self.moviesTableView.reloadData()
+            self.moviesTableView.scrollToRow(at: IndexPath(row: 0, section: 0),
+                                            at: .top,
+                                            animated: true)
         }
     }
 }
 
 extension HomeViewController: UICollectionViewDelegateFlowLayout {
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let width = viewModelType.getWidthOfCategoryItem(indexPath: indexPath)
-        return CGSize(width: width, height: collectionView.frame.height)
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let width = viewModel.getWidthOfCategoryItem(indexPath: indexPath)
+        return CGSize(width: width,
+                      height: collectionView.frame.height)
     }
 }
 
 extension HomeViewController: MovieDetailViewModelDelegate {
     
-    func didTapLike(_ viewController: MovieDetailViewController, movieID: Int, islike: Bool, voteCount: Int) {
-        guard let index = viewModelType.movies.firstIndex(where: { $0.id == movieID }) else { return }
-        viewModelType.didTapLike(index: index, islike: islike, voteCount: voteCount)
-        movieTableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .fade)
+    func didTapLike(_ viewController: MovieDetailViewController,
+                    movieID: Int,
+                    islike: Bool,
+                    voteCount: Int) {
+        guard let index = viewModel.movies.firstIndex(where: { $0.id == movieID }) else { return }
+        viewModel.didTapLike(index: index,
+                             islike: islike,
+                             voteCount: voteCount)
+        moviesTableView.reloadRows(at: [IndexPath(row: index, section: 0)],
+                                  with: .fade)
     }
 }

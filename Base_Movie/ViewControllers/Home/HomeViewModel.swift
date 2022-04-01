@@ -19,9 +19,9 @@ protocol HomeViewModelType {
     var isSearching: Bool { get }
     
     func getWidthOfCategoryItem(indexPath: IndexPath) -> CGFloat
-    func getListMovie(isLoadMore: Bool, isResetLoadMore: Bool, completion: @escaping () -> Void)
+    func getMovies(isLoadMore: Bool, isResetLoadMore: Bool, completion: @escaping () -> Void)
     func getCategories(completion: @escaping () -> Void)
-    func searchMovie(input: String, isWithCategory: Bool, isLoadMore: Bool, isResetLoadMore: Bool, completion: @escaping () -> Void)
+    func searchMovie(input: String, isSearchWithCategory: Bool, isLoadMore: Bool, isResetLoadMore: Bool, completion: @escaping () -> Void)
     func didTapLike(index: Int, islike: Bool, voteCount: Int)
     func didTapcategory(categorySelected: Category, completion: @escaping () -> Void)
 }
@@ -47,16 +47,15 @@ final class HomeViewModel: HomeViewModelType {
         let isCategorySelected = self.categorySelected?.id == categories[indexPath.row].id
         let fontAttributes = [NSAttributedString.Key.font: isCategorySelected ? categoryNameHighlightFont : categoryNameFont]
         let widthOfName: CGFloat = (categories[indexPath.row].name as NSString).size(withAttributes: fontAttributes as [NSAttributedString.Key : Any]).width
-        let widthOfSpaceLeftRightName = CGFloat(44)
-        return widthOfName + widthOfSpaceLeftRightName
+        return widthOfName + AppConfig.widthBetweenLeftRightAndTitleButton
     }
     
-    func getListMovie(isLoadMore: Bool, isResetLoadMore: Bool, completion: @escaping () -> Void) {
+    func getMovies(isLoadMore: Bool, isResetLoadMore: Bool, completion: @escaping () -> Void) {
         isSearching = false
         if isResetLoadMore {
             isCanLoadMoreMovie = true
         }
-        movieRepositoriy.getListMovie(isLoadMore && !isResetLoadMore ? (moviesCurrentPage + 1) : 1)
+        movieRepositoriy.getMovies(isLoadMore && !isResetLoadMore ? (moviesCurrentPage + 1) : 1)
             .subscribe { [weak self] response in
                 guard let self = self else { return }
                 if isLoadMore {
@@ -79,7 +78,7 @@ final class HomeViewModel: HomeViewModelType {
         categoryRepositories.getCategories()
             .subscribe { [weak self] categoryResponse in
                 guard let self = self else { return }
-                self.categories = categoryResponse.category
+                self.categories = categoryResponse.categories
                 self.categories.removeAll(where: { $0.name.isEmpty })
                 self.categorySelected = self.categories.first
                 guard let name = self.categorySelected?.name
@@ -87,7 +86,7 @@ final class HomeViewModel: HomeViewModelType {
                     completion()
                     return
                 }
-                self.searchMovie(input: name, isWithCategory: true, isLoadMore: false, isResetLoadMore: true, completion: completion)
+                self.searchMovie(input: name, isSearchWithCategory: true, isLoadMore: false, isResetLoadMore: true, completion: completion)
             } onError: { error in
                 print(error)
             } onCompleted: {
@@ -95,20 +94,19 @@ final class HomeViewModel: HomeViewModelType {
             }.disposed(by: disposeBag)
     }
     
-    func searchMovie(input: String, isWithCategory: Bool, isLoadMore: Bool, isResetLoadMore: Bool, completion: @escaping () -> Void) {
-        isSearching = !isWithCategory
+    func searchMovie(input: String, isSearchWithCategory: Bool, isLoadMore: Bool, isResetLoadMore: Bool, completion: @escaping () -> Void) {
+        isSearching = !isSearchWithCategory
         if isResetLoadMore {
             isCanLoadMoreMovie = true
         }
-        searchRepositories.searchMovies(input: input,
-                                        page: isLoadMore && !isResetLoadMore ? (moviesCurrentPage + 1) : 1)
+        searchRepositories.searchMovies(input: input, page: isLoadMore && !isResetLoadMore ? (moviesCurrentPage + 1) : 1)
             .subscribe { [weak self] response in
                 guard let self = self else { return }
-                if isLoadMore {
-                    self.movies.append(contentsOf: response.movies)
-                    self.moviesCurrentPage = response.page
-                } else {
+                if !isLoadMore {
                     self.movies = response.movies
+                } else if !response.movies.isEmpty {
+                    self.movies.append(contentsOf: response.movies)
+                    self.moviesCurrentPage = self.moviesCurrentPage + 1
                 }
                 completion()
             } onError: { [weak self] error in
@@ -129,6 +127,6 @@ final class HomeViewModel: HomeViewModelType {
     func didTapcategory(categorySelected: Category, completion: @escaping () -> Void) {
         self.categorySelected = categorySelected
         guard let input = categories.first(where: { $0.id == categorySelected.id })?.name else { return }
-        self.searchMovie(input: input, isWithCategory: true, isLoadMore: false, isResetLoadMore: true, completion: completion)
+        self.searchMovie(input: input, isSearchWithCategory: true, isLoadMore: false, isResetLoadMore: true, completion: completion)
     }
 }

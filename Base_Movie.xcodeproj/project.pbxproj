@@ -44,6 +44,7 @@
 		1B750D8C27EF7C9B00B4313C /* ReviewsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B750D8A27EF7C9B00B4313C /* ReviewsTableViewCell.swift */; };
 		1B750D8D27EF7C9B00B4313C /* ReviewsTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1B750D8B27EF7C9B00B4313C /* ReviewsTableViewCell.xib */; };
 		1B750D8F27EF7CAF00B4313C /* ReviewTableViewCellViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B750D8E27EF7CAF00B4313C /* ReviewTableViewCellViewModel.swift */; };
+		1B9C596927FA87A200529CA4 /* BaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B9C596827FA87A200529CA4 /* BaseViewController.swift */; };
 		1BAA5B4F27F6FA330036140A /* AppImages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BAA5B4E27F6FA330036140A /* AppImages.swift */; };
 		1BBD364927EF7DAA00C8F2A0 /* ReviewsCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BBD364727EF7DAA00C8F2A0 /* ReviewsCollectionViewCell.swift */; };
 		1BBD364A27EF7DAA00C8F2A0 /* ReviewsCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1BBD364827EF7DAA00C8F2A0 /* ReviewsCollectionViewCell.xib */; };
@@ -153,6 +154,7 @@
 		1B750D8A27EF7C9B00B4313C /* ReviewsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewsTableViewCell.swift; sourceTree = "<group>"; };
 		1B750D8B27EF7C9B00B4313C /* ReviewsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ReviewsTableViewCell.xib; sourceTree = "<group>"; };
 		1B750D8E27EF7CAF00B4313C /* ReviewTableViewCellViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewTableViewCellViewModel.swift; sourceTree = "<group>"; };
+		1B9C596827FA87A200529CA4 /* BaseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseViewController.swift; sourceTree = "<group>"; };
 		1BAA5B4E27F6FA330036140A /* AppImages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppImages.swift; sourceTree = "<group>"; };
 		1BBD364727EF7DAA00C8F2A0 /* ReviewsCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewsCollectionViewCell.swift; sourceTree = "<group>"; };
 		1BBD364827EF7DAA00C8F2A0 /* ReviewsCollectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ReviewsCollectionViewCell.xib; sourceTree = "<group>"; };
@@ -376,6 +378,7 @@
 				1BF6F58127EC0DB700B8F791 /* BindableType.swift */,
 				1B32280627F0AB8500F0F326 /* BaseNibView.swift */,
 				1B32280827F0ACBF00F0F326 /* BaseLoadMoreTableView.swift */,
+				1B9C596827FA87A200529CA4 /* BaseViewController.swift */,
 			);
 			path = BaseClass;
 			sourceTree = "<group>";
@@ -921,6 +924,7 @@
 				1B750D6B27ED754400B4313C /* AppColor.swift in Sources */,
 				1B750D8227EF641000B4313C /* AboutMovieCollectionViewCellViewModel.swift in Sources */,
 				1B4E0D0027EADAAE0081CCD2 /* AppDelegate.swift in Sources */,
+				1B9C596927FA87A200529CA4 /* BaseViewController.swift in Sources */,
 				1BBD364C27EF8ABF00C8F2A0 /* Review.swift in Sources */,
 				1B750D5B27ECC7CF00B4313C /* DecodeUtils.swift in Sources */,
 				1B32280527F0AA9B00F0F326 /* LoadMoreIndicator.swift in Sources */,

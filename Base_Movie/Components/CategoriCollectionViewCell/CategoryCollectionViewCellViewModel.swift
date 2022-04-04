@@ -6,23 +6,30 @@
 //
 
 import Foundation
+import RxSwift
+import RxRelay
 
 protocol CategoryCollectionViewCellViewModelType {
     
-    var isSelectedCategory: Bool { get }
-    var category: Category? { get }
-    var diTapcategory: (() -> Void)? { get set }
+    var categorySelected: BehaviorRelay<Category?> { get }
+    var category: Category { get }
+    var didTapCategory: PublishSubject<Category> { get set }
+    var categoryButtonFont: UIFont { get }
+    var categoryButtonHighlightFont: UIFont { get }
 }
 
 class CategoryCollectionViewCellViewModel: CategoryCollectionViewCellViewModelType {
-        
-    var isSelectedCategory: Bool = false
-    var category: Category?
-    var diTapcategory: (() -> Void)?
     
-    init(isSelectedCategory: Bool, category: Category?, diTapcategory: @escaping (() -> Void)) {
-        self.diTapcategory = diTapcategory
+    var categorySelected: BehaviorRelay<Category?>
+    var didTapCategory: PublishSubject<Category>
+    var category: Category
+    
+    var categoryButtonFont = AppFont.getFont(fontName: .regular, fontSize: 12)
+    var categoryButtonHighlightFont = AppFont.getFont(fontName: .semiBold, fontSize: 12)
+    
+    init(categorySelected: BehaviorRelay<Category?>, category: Category, didTapCategory: PublishSubject<Category>) {
         self.category = category
-        self.isSelectedCategory = isSelectedCategory
+        self.categorySelected = categorySelected
+        self.didTapCategory = didTapCategory
     }
 }

@@ -22,6 +22,7 @@ struct AppImages {
         case iconStarSelected = "icon_star_selected"
         case iconStar = "icon_star"
         case iconWatchList = "icon_watch_list"
+        case iconWatchListWhite = "icon_watch_list_white"
     }
     
     static func getImage(imageName: ImageName) -> UIImage? {

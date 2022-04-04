@@ -17,7 +17,7 @@ class MovieTableViewCell: UITableViewCell {
     @IBOutlet private weak var likeButton: UIButton!
     @IBOutlet private weak var starButton: UIButton!
     
-    private var viewModel: MovieTableViewCellViewModelType?
+    private var viewModel: MovieTableViewCellViewModelType!
     
     func setup(viewModel: MovieTableViewCellViewModelType) {
         self.viewModel = viewModel
@@ -30,17 +30,12 @@ class MovieTableViewCell: UITableViewCell {
         realeaseDateLabel.text = viewModel?.movie.releaseDate
         averageRatingLabel.text = String(viewModel?.movie.voteAverage ?? 0)
         rateLabe.text = String(viewModel?.movie.voteCount ?? 0)
-        handleChangeLikeMovie()
-    }
-    
-    private func handleChangeLikeMovie() {
         likeButton.setImage(AppImages.getImage(imageName: (viewModel?.movie.isLike ?? false) ? .iconLikeSelected : .iconLike), for: .normal)
         starButton.setImage(AppImages.getImage(imageName: (viewModel?.movie.isLike ?? false) ? .iconStarSelected : .iconStar), for: .normal)
         rateLabe.textColor = (viewModel?.movie.isLike ?? false) ? AppColors.greenColor : AppColors.whiteColor
     }
     
     @IBAction private func didTapLike(_ sender: Any) {
-        viewModel?.changeLike()
-        setupUI()
+        viewModel.didTapLike.onNext(viewModel.movie)
     }
 }
